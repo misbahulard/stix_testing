@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     client = MongoClient('mongodb://localhost:27017')
 
-    db = client['stix']
+    db = client['stix_pcap']
     event_coll = db['event']
     bundle_coll = db['bundle']
 

@@ -1,0 +1,115 @@
+--------------------------------------------
+to count the number of message alerts:
+--------------------------------------------
+db.event.aggregate([
+	{
+		"$group": {_id: "$alert_msg", 
+		count: {$sum: "$number_observed"}}
+	},
+	{
+		"$sort": { "count": -1 }
+	}		
+])
+
+--------------------------------------------
+to count the number of ports:
+--------------------------------------------
+db.event.aggregate([
+	{
+		"$group": {_id: "$dest_port", 
+		count: {$sum: "$number_observed"}}
+	},
+	{
+		"$sort": { "count": -1 }
+	}	
+])
+
+--------------------------------------------
+To create a new collection for analysis:
+--------------------------------------------
+- Actor
+
+db.bundle.find().forEach(function(doc) { 
+	actor = doc.objects[4]; 
+	observed = doc.objects[0];
+	result = {};
+	result.number_observed = observed.number_observed
+	result.ip = actor.description.replace(/^(.*?)\|/g, '').trim();
+	result.country = actor.name.replace(/.(threat actor)/g, '').trim();
+	db.actor_analytics.save(result);
+});
+
+- Target
+
+db.bundle.find().forEach(function(doc) { 
+	target = doc.objects[3]; 
+	observed = doc.objects[0];
+	result = {};
+	result.number_observed = observed.number_observed
+	result.ip = target.description.replace(/^(.*?)\|/g, '').trim();
+	result.country = target.name.replace(/.(threat actor)/g, '').trim();
+	db.target_analytics.save(result);
+});
+
+--------------------------------------------
+Query for data analysis
+--------------------------------------------
+- Actor
+db.actor_analytics.aggregate([ 
+	{ 
+		"$group": { 
+			_id: { 
+				ip: "$ip", 
+				country: "$country" 
+			}, 
+			count: {$sum: "$number_observed"}
+		},
+	}, 
+	{
+		"$sort": { "count": -1 }
+	}	
+])
+
+- Target
+db.target_analytics.aggregate([
+	{ 
+		"$group": { 
+			_id: { 
+				ip: "$ip", 
+				country: "$country" 
+			}, 
+			count: {$sum: "$number_observed"}
+		},
+	}, 
+	{
+		"$sort": { "count": -1 }
+	}	
+])
+
+- Actor Country
+db.actor_analytics.aggregate([ 
+	{ 
+		"$group": { 
+			_id: "$country",
+			count: {$sum: "$number_observed"}
+		},
+	}, 
+	{
+		"$sort": { "count": -1 }
+	}	
+])
+
+- Target Country
+db.target_analytics.aggregate([ 
+	{ 
+		"$group": { 
+			_id: "$country",
+			count: {$sum: "$number_observed"}
+		},
+	}, 
+	{
+		"$sort": { "count": -1 }
+	}	
+])
+
+

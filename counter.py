@@ -5,7 +5,7 @@ if __name__ == "__main__":
 
     client = MongoClient('mongodb://localhost:27017')
 
-    db = client['stix']
+    db = client['stix_pcap']
     actor_coll = db['actor_test']
     target_coll = db['target_test']
 
@@ -45,10 +45,10 @@ if __name__ == "__main__":
     print("\n==============TARGET==============")
     print("Testing Top 10 IP..")
     result_ip = list(target_coll.aggregate([query_ip, query_sort]))
-    for index in range(10):
+    for index in range(4):
         print(result_ip[index])
 
     print("\nTesting Top 10 Location..")
     result_name = list(target_coll.aggregate([query_name, query_sort]))
-    for index in range(10):
+    for index in range(3):
         print(result_name[index])
